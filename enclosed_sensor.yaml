@@ -1,5 +1,5 @@
 substitutions:
-  temp_offset: "0" #change this
+  temp_offset: "0" #change this with a negative number
 
 
 
