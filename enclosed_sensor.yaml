@@ -1,0 +1,64 @@
+substitutions:
+  temp_offset: "0" #change this
+
+
+
+sensor:
+  - platform: absolute_humidity
+    name: Absolute Humidity
+    temperature: current_temp
+    humidity: humidity
+    
+
+  - platform: absolute_humidity
+    name: Absolute Humidity Reference
+    temperature: temp_not_offsetted
+    humidity: humidity_uncalibrated
+    
+  - platform: template
+    name: "AHT20 Humidity"
+    id: humidity
+    update_interval: 1s
+    lambda: |-
+     // https://www.omnicalculator.com/physics/relative-humidity
+      return(100 * exp((17.625 * id(dew_point).state) / (243.04 + id(dew_point).state)) / exp((17.625 * id(current_temp).state) / (243.04 + id(current_temp).state)));
+    unit_of_measurement: '%'
+    device_class: humidity
+    icon: 'mdi:thermometer-alert'
+
+
+  - platform: template
+    name: "Dew Point"
+    id: dew_point
+    update_interval: 1s
+    lambda: |-
+      // https://esphome.io/cookbook/bme280_environment.html
+
+      return (243.5*(log(id(humidity_uncalibrated).state/100)+((17.67*id(temp_not_offsetted).state)/
+      (243.5+id(temp_not_offsetted).state)))/(17.67-log(id(humidity_uncalibrated).state/100)-
+      ((17.67*id(temp_not_offsetted).state)/(243.5+id(temp_not_offsetted).state))));
+    unit_of_measurement: °C
+    icon: 'mdi:thermometer-alert'
+    
+  - platform: template
+    id: current_temp
+    name: AHT20 Temperature
+    accuracy_decimals: 2
+    unit_of_measurement: "°C"
+    device_class: temperature
+    update_interval: 1s
+    lambda: |-
+      return id(temp_not_offsetted).state;
+    filters:
+        - offset: ${temp_offset} 
+ 
+
+    #both internal 
+  - platform: aht10
+    temperature:
+      accuracy_decimals: 1
+      id: temp_not_offsetted
+    humidity:
+      id: humidity_uncalibrated
+      internal: false
+    update_interval: 5s
