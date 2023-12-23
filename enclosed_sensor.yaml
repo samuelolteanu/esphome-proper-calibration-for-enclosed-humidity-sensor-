@@ -60,5 +60,4 @@ sensor:
       id: temp_not_offsetted
     humidity:
       id: humidity_uncalibrated
-      internal: false
     update_interval: 5s
